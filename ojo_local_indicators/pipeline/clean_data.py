@@ -19,7 +19,6 @@
 import pandas as pd
 import numpy as np
 import ojo_local_indicators
-import ojo_local_indicators.pipeline.eda as eda
 import json
 
 
@@ -27,6 +26,12 @@ import json
 def open_data_dump(file):
     with open(file) as json_file:
         data = json.load(json_file)
+    return data
+
+
+# %%
+def is_duplicate(data):
+    data = [item for item in data if item["features"].get("is_duplicate") == False]
     return data
 
 
@@ -56,6 +61,18 @@ def create_df(data):
     df["nuts_2_name"] = location_name
 
     return df
+
+
+# %%
+def re_assign_brighton(df):
+    brighton_names = list(
+        df[df["job_location_raw"].str.contains("Brighton")]["job_location_raw"].unique()
+    )
+    for name in brighton_names:
+        df.loc[df["job_location_raw"] == name, "nuts_2_code"] = "UKJ2"
+        df.loc[
+            df["job_location_raw"] == name, "nuts_2_name"
+        ] = "Surrey, East And West Sussex"
 
 
 # %%

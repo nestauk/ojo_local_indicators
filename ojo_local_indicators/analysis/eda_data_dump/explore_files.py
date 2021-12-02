@@ -19,7 +19,7 @@
 import pandas as pd
 import numpy as np
 import ojo_local_indicators
-import ojo_local_indicators.pipeline.eda as eda
+import ojo_local_indicators.pipeline.clean_data as cd
 import json
 import matplotlib.pyplot as plt
 import missingno as msno
@@ -45,16 +45,16 @@ def time_index(df):
 project_directory = ojo_local_indicators.PROJECT_DIR
 
 # Read in files
-data_july = eda.open_data_dump(
+data_july = cd.open_data_dump(
     f"{project_directory}/inputs/data/job_ads_no_descriptions-15-07-2021.json"
 )
-data_april = eda.open_data_dump(
+data_april = cd.open_data_dump(
     f"{project_directory}/inputs/data/job_ads_no_descriptions-15-04-2021.json"
 )
 
 # Create dataframes
-df_july = eda.create_df(data_july)
-df_april = eda.create_df(data_april)
+df_july = cd.create_df(data_july)
+df_april = cd.create_df(data_april)
 
 # +
 pd.concat(
@@ -77,8 +77,11 @@ df_april.drop(
     df_april[df_april["duplicated"] == True].index, inplace=True
 )  # Remove duplicated jobs
 
-eda.rem_cols(df_july)
-eda.rem_cols(df_april)
+cd.rem_cols(df_july)
+cd.rem_cols(df_april)
+
+cd.re_assign_brighton(df_july)
+cd.re_assign_brighton(df_july)
 
 # Slice for Sussex and non-sussex
 df_ukj2 = df_july.loc[
@@ -86,7 +89,9 @@ df_ukj2 = df_july.loc[
 ].copy()  # Slice by UKJ2 - Surrey, East and West Sussex
 df_uk = df_july.loc[df_july["nuts_2_code"] != "UKJ2"].copy()  # Slice by not UKJ2
 # Non Sussex random sample
-df_uk_sample = df_uk.sample(n=8018, random_state=2)
+df_uk_sample = df_uk.sample(n=9158, random_state=2)
+
+print(df_ukj2.shape, df_uk_sample.shape)
 
 # #### Exploratory data analysis
 
@@ -155,6 +160,6 @@ plt.xlabel("Created date")
 plt.ylabel("Job count")
 
 # Save id's to data outputs...
-df_july.to_csv(f"{project_directory}/outputs/data/july_data_dump.csv", index=False)
+df_july.to_csv(f"{project_directory}/outputs/data/july_data_dump.csv", index=True)
 df_ukj2.to_csv(f"{project_directory}/outputs/data/ukj2_july.csv", index=False)
 df_uk_sample.to_csv(f"{project_directory}/outputs/data/uk_sample_july.csv", index=False)
