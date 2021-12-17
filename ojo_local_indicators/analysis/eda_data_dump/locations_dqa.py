@@ -18,8 +18,8 @@
 import ojo_local_indicators
 import pandas as pd
 import numpy as np
-import json
 import matplotlib.pyplot as plt
+import ojo_local_indicators.pipeline.clean_data as cd
 
 # Set directory
 project_directory = ojo_local_indicators.PROJECT_DIR
@@ -262,3 +262,164 @@ patches, texts, pcts = ax.pie(
 plt.setp(pcts, color="white", fontweight="bold")
 ax.set_title("Nuts 2 regions correct (location weighted)", fontsize=18)
 plt.tight_layout()
+# -
+
+# ### Sussex location DQA
+
+data_july = cd.open_data_dump(
+    f"{project_directory}/inputs/data/job_ads_no_descriptions-15-07-2021.json"
+)
+
+data_july = cd.is_duplicate(data_july)
+df_july = cd.create_df(data_july)
+cd.rem_cols(df_july)
+
+# +
+### Take top N locations in the Sussex Nuts 2 field
+# -
+
+(
+    (
+        df_july.loc[(df_july["nuts_2_code"] == "UKJ2")]
+        .copy()["job_location_raw"]
+        .value_counts(normalize=True)
+        .head(30)
+    )
+    * 100
+)
+
+# Percent of locations covered by top 55
+(
+    (
+        df_july.loc[(df_july["nuts_2_code"] == "UKJ2")]
+        .copy()["job_location_raw"]
+        .value_counts(normalize=True)
+        .head(55)
+    )
+    * 100
+).sum()
+
+# Number of unique locations
+df_july.loc[(df_july["nuts_2_code"] == "UKJ2")].copy()["job_location_raw"].nunique()
+
+top_55 = list(
+    df_july.loc[(df_july["nuts_2_code"] == "UKJ2")]
+    .copy()["job_location_raw"]
+    .value_counts(normalize=True)
+    .head(55)
+    .index
+)
+sussex_top55 = df_july[df_july["job_location_raw"].isin(top_55)].drop_duplicates(
+    subset=["job_location_raw", "nuts_2_name"]
+)
+
+percent_share = (
+    (
+        df_july.loc[(df_july["nuts_2_code"] == "UKJ2")]
+        .copy()["job_location_raw"]
+        .value_counts(normalize=True)
+        .head(55)
+    )
+    * 100
+).reset_index()
+
+percent_share.head(1)
+
+sussex_top55 = pd.merge(
+    sussex_top55[["job_location_raw", "nuts_2_name"]].copy(),
+    percent_share,
+    how="left",
+    left_on="job_location_raw",
+    right_on="index",
+)
+
+sussex_top55.head(1)
+
+# +
+# sussex_top55.to_csv('top20locations_sussex.csv', index=False)
+# -
+
+
+# +
+### Top areas in sussex - keyword search of job_location_raw field
+
+# +
+# https://en.wikipedia.org/wiki/List_of_settlements_in_East_Sussex_by_population
+# -
+
+east_sussex = [
+    "Brighton",
+    "Hove",
+    "Eastbourne",
+    "Hastings",
+    "Bexhill-on-Sea",
+    "Seaford",
+    "Crowborough",
+    "Hailsham",
+    "Portslade-by-Sea",
+    "Peacehaven",
+    "Lewes",
+    "Uckfield",
+    "Newhaven",
+    "Saltdean",
+    "Polegate",
+    "Heathfield",
+    "Battle",
+    "Rye",
+]
+
+# +
+# https://en.wikipedia.org/wiki/List_of_settlements_in_West_Sussex_by_population
+# -
+
+west_sussex = [
+    "Worthing",
+    "Crawley",
+    "Bognor Regis",
+    "Littlehampton",
+    "Shoreham-by-Sea",
+    "Horsham",
+    "Haywards Heath",
+    "Burgess Hill",
+    "East Grinstead",
+    "Chichester",
+    "Hurstpierpoint",
+    "Southwick",
+    "Selsey",
+    "Westergate",
+    "Southwater",
+    "Storrington",
+    "West Chiltington Common",
+    "Billingshurst",
+    "Steyning",
+    "East Wittering",
+    "Midhurst",
+    "Henfield",
+    "Crawley Down",
+]
+
+sussex = east_sussex + west_sussex
+
+sussex = list(map(str.lower, sussex.copy()))
+
+import string
+
+sussex_clean = [
+    "".join(x for x in par if x not in string.punctuation) for par in sussex
+]
+
+sussex[0]
+
+df_july["location_clean"] = df_july["job_location_raw"].str.lower()
+
+pattern = "|".join(sussex)
+
+sussex_keywords = df_july[df_july["location_clean"].str.contains(pattern) == True]
+
+sussex_keywords.drop_duplicates(
+    subset=["job_location_raw", "nuts_2_name"], inplace=True
+)
+
+sussex_keywords[["job_location_raw", "nuts_2_name"]].to_csv(
+    "locations_sussex_keywords.csv", index=False
+)
