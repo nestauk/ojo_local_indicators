@@ -105,6 +105,6 @@ plt.ylabel("Occupations")
 # plt.show()
 
 # Save chart
-plt.savefig("top_occupations_sussex_uk.png", dpi=200, bbox_inches="tight")
+plt.savefig("top_occupations_sussex_uk.jpg", dpi=1200, bbox_inches="tight")
 
 # %%

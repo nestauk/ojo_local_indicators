@@ -20,6 +20,7 @@ import pandas as pd
 import json
 import time
 import random
+import numpy as np
 
 from ojd_daps.dqa.data_getters import get_cached_job_ads
 from ojd_daps.dqa.data_getters import fetch_descriptions
@@ -126,6 +127,12 @@ skill_groups = pd.DataFrame({"Skill_0": l0, "Skill_2": l2})
 skill_groups.drop_duplicates(inplace=True)
 
 # %%
+skill_groups.head(1)
+
+# %%
+sussex[200]
+
+# %%
 cluster_2 = skill_count(sussex_skills, "label_cluster_2")
 cluster_uk_2 = skill_count(uk_skills, "label_cluster_2")
 
@@ -153,17 +160,19 @@ df2_sussex = pd.DataFrame(
 )
 
 # %%
+df2_sussex.head(3)
+
+# %%
 skills_2 = []
 for skill in list(cluster_uk_2s.keys()):
     skills_2.append(sum(cluster_uk_2s[skill]) / 39819)
 
-# %%
 df2_uk = pd.DataFrame(
     {"Skill": list(cluster_uk_2s.keys()), "Adverts requiring skill group": skills_2}
 )
 
 # %%
-df2_uk.head(2)
+df2_uk.head(5)
 
 # %%
 # Build a dataset
@@ -478,126 +487,24 @@ df2_sussex["color"].replace(
 )
 
 # %%
-df2_uk.head(1)
+df2_uk["label"] = (
+    df2_uk["Skill"]
+    + " "
+    + ((df2_uk["Adverts requiring skill group"]) * 100).round().astype(int).astype(str)
+    + "%"
+)
 
 # %%
-# import pandas for data wrangling
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+df2_uk.head(5)
 
+# %%
 df = df2_uk
 
 df = df.sort_values(by=["Adverts requiring skill group"])
 df["Adverts requiring skill group"] = df["Adverts requiring skill group"] * 100
 
 # Build a dataset
-df["Name"] = df["Skill"]
-df["Value"] = df["Adverts requiring skill group"]
-
-# Reorder the dataframe
-df = df.sort_values(by=["Value"])
-
-# initialize the figure
-plt.figure(figsize=(30, 10))
-ax = plt.subplot(111, polar=True)
-plt.axis("off")
-
-# Constants = parameters controling the plot layout:
-upperLimit = 100
-lowerLimit = 20
-labelPadding = 4
-
-# Compute max and min in the dataset
-max = df["Value"].max()
-
-# Let's compute heights: they are a conversion of each item value in those new coordinates
-# In our example, 0 in the dataset will be converted to the lowerLimit (10)
-# The maximum will be converted to the upperLimit (100)
-slope = (max - lowerLimit) / max
-heights = slope * df.Value + lowerLimit
-
-# Compute the width of each bar. In total we have 2*Pi = 360°
-width = 2 * np.pi / len(df.index)
-
-# Compute the angle each bar is centered on:
-indexes = list(range(1, len(df.index) + 1))
-angles = [element * width for element in indexes]
-angles
-
-# Draw bars
-bars = ax.bar(
-    x=angles,
-    height=heights,
-    width=width,
-    bottom=lowerLimit,
-    linewidth=2,
-    edgecolor="white",
-    color=list(df["color"]),
-)
-
-# map names to colors
-cmap = dict(zip(list(df["Skill_0"]), list(df["color"])))
-
-# create the rectangles for the legend
-patches = [Patch(color=v, label=k) for k, v in cmap.items()]
-
-# add the legend
-plt.legend(
-    handles=patches,
-    bbox_to_anchor=(1.3, 0.5),
-    loc="center left",
-    borderaxespad=0,
-    fontsize=11,
-    frameon=False,
-)
-
-# Add labels
-for bar, angle, height, label in zip(bars, angles, heights, df["Name"]):
-
-    # Labels are rotated. Rotation must be specified in degrees :(
-    rotation = np.rad2deg(angle)
-
-    # Flip some labels upside down
-    alignment = ""
-    if angle >= np.pi / 2 and angle < 3 * np.pi / 2:
-        alignment = "right"
-        rotation = rotation + 180
-    else:
-        alignment = "left"
-
-    # Finally add the labels
-    ax.text(
-        x=angle,
-        y=lowerLimit + bar.get_height() + labelPadding,
-        s=label,
-        ha=alignment,
-        va="center",
-        rotation=rotation,
-        rotation_mode="anchor",
-        # weight = 'bold'
-    )
-
-plt.title(
-    "Percent of UK adverts that belong to skill groups",
-    fontsize=17,
-    weight="bold",
-    pad=50,
-)
-
-# %%
-# import pandas for data wrangling
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-
-df = df2_sussex
-
-df = df.sort_values(by=["Adverts requiring skill group"])
-df["Adverts requiring skill group"] = df["Adverts requiring skill group"] * 100
-
-# Build a dataset
-df["Name"] = df["Skill"]
+df["Name"] = df["label"]
 df["Value"] = df["Adverts requiring skill group"]
 
 # Reorder the dataframe
@@ -684,10 +591,138 @@ for bar, angle, height, label in zip(bars, angles, heights, df["Name"]):
     )
 
 plt.title(
-    "Percent of Sussex adverts that belong to skill groups",
+    "Percent of vacancies belonging to skill group - Rest of UK",
     fontsize=17,
     weight="bold",
-    pad=100,
+    pad=50,
+)
+
+plt.tight_layout()
+
+# Do the plot code
+plt.savefig(
+    "percent_uk_ads_skill_group.jpg", format="jpg", dpi=1200, bbox_inches="tight"
+)
+
+# %%
+df2_sussex["label"] = (
+    df2_sussex["Skill"]
+    + " "
+    + ((df2_sussex["Adverts requiring skill group"]) * 100)
+    .round()
+    .astype(int)
+    .astype(str)
+    + "%"
+)
+
+# %%
+df2_sussex.head(5)
+
+# %%
+df = df2_sussex
+
+df = df.sort_values(by=["Adverts requiring skill group"])
+df["Adverts requiring skill group"] = df["Adverts requiring skill group"] * 100
+
+# Build a dataset
+df["Name"] = df["label"]
+df["Value"] = df["Adverts requiring skill group"]
+
+# Reorder the dataframe
+df = df.sort_values(by=["Value"])
+
+# initialize the figure
+plt.figure(figsize=(20, 10))
+ax = plt.subplot(111, polar=True)
+plt.axis("off")
+
+# Constants = parameters controling the plot layout:
+upperLimit = 100
+lowerLimit = 20
+labelPadding = 4
+
+# Compute max and min in the dataset
+max = df["Value"].max()
+
+# Let's compute heights: they are a conversion of each item value in those new coordinates
+# In our example, 0 in the dataset will be converted to the lowerLimit (10)
+# The maximum will be converted to the upperLimit (100)
+slope = (max - lowerLimit) / max
+heights = slope * df.Value + lowerLimit
+
+# Compute the width of each bar. In total we have 2*Pi = 360°
+width = 2 * np.pi / len(df.index)
+
+# Compute the angle each bar is centered on:
+indexes = list(range(1, len(df.index) + 1))
+angles = [element * width for element in indexes]
+angles
+
+# Draw bars
+bars = ax.bar(
+    x=angles,
+    height=heights,
+    width=width,
+    bottom=lowerLimit,
+    linewidth=2,
+    edgecolor="white",
+    color=df["color"],
+)
+
+# map names to colors
+cmap = dict(zip(list(df["Skill_0"]), list(df["color"])))
+
+# create the rectangles for the legend
+patches = [Patch(color=v, label=k) for k, v in cmap.items()]
+
+# add the legend
+plt.legend(
+    handles=patches,
+    bbox_to_anchor=(1.5, 0.5),
+    loc="center left",
+    borderaxespad=0,
+    fontsize=11,
+    frameon=False,
+)
+
+# Add labels
+for bar, angle, height, label in zip(bars, angles, heights, df["Name"]):
+
+    # Labels are rotated. Rotation must be specified in degrees :(
+    rotation = np.rad2deg(angle)
+
+    # Flip some labels upside down
+    alignment = ""
+    if angle >= np.pi / 2 and angle < 3 * np.pi / 2:
+        alignment = "right"
+        rotation = rotation + 180
+    else:
+        alignment = "left"
+
+    # Finally add the labels
+    ax.text(
+        x=angle,
+        y=lowerLimit + bar.get_height() + labelPadding,
+        s=label,
+        ha=alignment,
+        va="center",
+        rotation=rotation,
+        rotation_mode="anchor",
+        # weight = 'bold'
+    )
+
+plt.title(
+    "Percent of vacancies belonging to skill group - Sussex",
+    fontsize=17,
+    weight="bold",
+    pad=150,
+)
+
+plt.tight_layout()
+
+# Do the plot code
+plt.savefig(
+    "percent_sussex_ads_skill_group.jpg", format="jpg", dpi=1200, bbox_inches="tight"
 )
 
 # %%
@@ -695,7 +730,7 @@ plt.title(
 # Colour by broad skill group...
 
 # %%
-df2_sussex.head(42)
+df2_sussex.head(3)
 
 # %%
 df2_sussex.shape
@@ -751,7 +786,7 @@ range_ = ["#18A48C", "#9A1BBE", "#EB003B", "#FF6E47", "#0000FF"]
 
 base = (
     alt.Chart(
-        source, title="Percentage of vacancies by top Sussex skills - UK vs Sussex"
+        source, title="Percentage of vacancies by top 10 Sussex skills compared to UK"
     )
     .encode(
         x=alt.X(
@@ -775,7 +810,9 @@ base = (
     .properties(width=650, height=500)
 )
 
-base.mark_point() + base.mark_text(dx=15, dy=2, align="left")
+test = base.mark_point() + base.mark_text(dx=15, dy=2, align="left")
+
+test.save("uk_vs_sussex_skills_top.html", scale_factor=2.0)
 
 # %% [markdown]
 # ### What salaries are associated with the largest (or fastest-growing) skill groups in Sussex?
@@ -867,6 +904,112 @@ sns.displot(cs, x="salary", bins=50)
 cs["salary"].max()
 
 plt.title("Distribution of annual salary per skill group")
+
+# %%
+skill_salary.head(2)
+
+# %%
+df_sussex_10.head(5)
+
+# %%
+fig_dims = (10, 10)
+fig, ax = plt.subplots(figsize=fig_dims)
+
+my_pal = {
+    "Customer Services": "#9A1BBE",
+    "Business & Project Management": "#EB003B",
+    "Financial Services": "#EB003B",
+    "Sales": "#9A1BBE",
+    "Data Analytics": "#FF6E47",
+}
+
+
+# Turns off grid on the left Axis.
+ax.grid(False)
+
+
+ax = sns.boxplot(x="skill group", y="salary", data=skill_salary, palette=my_pal)
+
+from matplotlib.lines import Line2D
+
+legend_elements = [
+    Line2D([0], [0], color="#9A1BBE", lw=4, label="Sales & Communication"),
+    Line2D(
+        [0], [0], color="#EB003B", lw=4, label="Business Administration, Finance & Law"
+    ),
+    Line2D(
+        [0],
+        [0],
+        color="#FF6E47",
+        lw=4,
+        label="Information & Communication Technologies",
+    ),
+]
+ax.legend(handles=legend_elements, loc=2, bbox_to_anchor=(1, 1))
+
+ax.set_title("Salary distributions of top 5 skills - Sussex", fontsize=18)
+ax.tick_params(axis="x", rotation=90)
+
+# plt.tight_layout()
+
+# Do the plot code
+plt.savefig(
+    "salary_distributions_top_5_skills_sussex.jpg",
+    format="jpg",
+    dpi=1200,
+    bbox_inches="tight",
+)
+
+# %%
+fig_dims = (10, 10)
+fig, ax = plt.subplots(figsize=fig_dims)
+
+my_pal = {
+    "Customer Services": "#9A1BBE",
+    "Business & Project Management": "#EB003B",
+    "Financial Services": "#EB003B",
+    "Sales": "#9A1BBE",
+    "Data Analytics": "#FF6E47",
+}
+
+
+# Turns off grid on the left Axis.
+ax.grid(False)
+
+
+ax = sns.boxplot(
+    x="skill group", y="salary", data=skill_salary, palette=my_pal, showfliers=False
+)
+
+from matplotlib.lines import Line2D
+
+legend_elements = [
+    Line2D([0], [0], color="#9A1BBE", lw=4, label="Sales & Communication"),
+    Line2D(
+        [0], [0], color="#EB003B", lw=4, label="Business Administration, Finance & Law"
+    ),
+    Line2D(
+        [0],
+        [0],
+        color="#FF6E47",
+        lw=4,
+        label="Information & Communication Technologies",
+    ),
+]
+ax.legend(handles=legend_elements, loc=2, bbox_to_anchor=(1, 1))
+
+ax.set_title("Salary distributions of top 5 skills - Sussex", fontsize=18)
+ax.tick_params(axis="x", rotation=90)
+
+# plt.tight_layout()
+
+# Do the plot code
+plt.savefig(
+    "salary_distributions_top_5_skills_sussex_outliers_rem.jpg",
+    format="jpg",
+    dpi=1200,
+    bbox_inches="tight",
+)
 
 # %%
 sns.set(font_scale=1.2)

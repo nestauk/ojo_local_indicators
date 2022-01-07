@@ -117,28 +117,42 @@ indust_comb.head(6)
 import numpy as np
 
 # %%
+from altair_saver import save
+
+# %%
 domain = ["Sussex", "UK"]
 range_ = ["#18A48C", "#0000FF"]
 
 
-alt.Chart(
-    indust_comb, title="Percentage of vacancies by industry - UK vs Sussex"
-).mark_tick(filled=True, thickness=3, opacity=0.7).encode(
-    # x='percentage share:Q',
-    x=alt.X(
-        "percentage share:Q",
-        sort="-x",
-        axis=alt.Axis(title="Percentage share", grid=False),
-    ),
-    y=alt.Y("industry:O", sort="-x", axis=alt.Axis(title="Industry", grid=True)),
-    color=alt.Color(
-        "location",
-        legend=alt.Legend(title="Location"),
-        scale=alt.Scale(domain=domain, range=range_),
-    ),
-).properties(
-    width=600, height=700
+chart = (
+    alt.Chart(
+        indust_comb,
+        title="Percentage of vacancies by industry - Sussex compared to the rest of the UK",
+    )
+    .mark_tick(filled=True, thickness=3, opacity=0.7)
+    .encode(
+        # x='percentage share:Q',
+        x=alt.X(
+            "percentage share:Q",
+            sort="-x",
+            axis=alt.Axis(title="Percentage share", grid=False),
+        ),
+        y=alt.Y("industry:O", sort="-x", axis=alt.Axis(title="Industry", grid=True)),
+        color=alt.Color(
+            "location",
+            legend=alt.Legend(title="Location"),
+            scale=alt.Scale(domain=domain, range=range_),
+        ),
+    )
+    .properties(width=650, height=1000)
+    .configure_axis(labelFontSize=12, titleFontSize=14)
+    .configure_title(fontSize=16)
+    .configure_legend(titleFontSize=14, labelFontSize=12)
 )
+
+chart  # .resolve_scale(y='independent')
+
+save(chart, "vacancies_industry_sussex_uk.html")
 
 # %% [markdown]
 # ### Time
@@ -240,15 +254,15 @@ fig["layout"]["yaxis"]["title"]["text"] = ""
 fig["layout"]["yaxis5"]["title"]["text"] = ""
 fig["layout"]["yaxis3"]["title"]["text"] = "Count of vacancies (standardised)"
 
-# fig.show()
+fig.show()
 
-import plotly.offline as py
+# import plotly.offline as py
 
-py.iplot(fig, filename="test")
+# py.iplot(fig, filename="test")
 
 # %%
 import plotly.io as pio
 
-pio.write_image(fig, "sussex_uk_top_6_ind_over_time.png")
+pio.write_image(fig, "sussex_uk_top_6_ind_over_time.png", scale=5)
 
 # %%
