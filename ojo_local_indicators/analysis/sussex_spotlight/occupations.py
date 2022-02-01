@@ -62,6 +62,9 @@ occupation_uk = [d["sector"] for d in uk_sample if "sector" in d]
 created_uk = [d["created"] for d in uk_sample if "created" in d]
 
 # %%
+len(created_uk)
+
+# %%
 occ = pd.DataFrame(list(zip(occupation, created)), columns=["occupation", "created"])
 occ_uk = pd.DataFrame(
     list(zip(occupation_uk, created_uk)), columns=["occupation", "created"]
@@ -87,24 +90,43 @@ occ_uk_sussex = pd.concat(
 )
 
 # %%
-occ_uk_sussex["Difference from UK"] = occ_uk_sussex["Sussex"] - occ_uk_sussex["UK"]
+occ_uk_sussex["Difference from the rest of the UK"] = (
+    occ_uk_sussex["Sussex"] - occ_uk_sussex["UK"]
+)
 
 # %%
-occ_uk_sussex.sort_values(by="Sussex", ascending=False).head(30)[
-    ["Difference from UK", "Sussex"]
-].sort_values(by=["Sussex", "Difference from UK"]).plot(
-    kind="barh", figsize=(10, 10), color=["#0000FF", "#18A48C"], alpha=0.7
+bar_plot = (
+    occ_uk_sussex.sort_values(by="Sussex", ascending=False)
+    .head(30)[["Difference from the rest of the UK", "Sussex"]]
+    .sort_values(by=["Sussex", "Difference from the rest of the UK"])
 )
+
+# %%
+bar_plot.head(1)
+
+# %%
+bar_plot.plot(kind="barh", color=["#0000FF", "#18A48C"], alpha=0.7, figsize=(10, 20))
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
 
 plt.gca().yaxis.grid(True, color="#646363", linestyle="-", linewidth=0.2)
 
-plt.title("Top 30 occupations Sussex compared to the UK")
+plt.title(
+    "Top 30 occupations Sussex compared to the rest of the UK", fontsize=35, pad=35
+)
 plt.xlabel("Percentage of vacancies")
 plt.ylabel("Occupations")
 
-# plt.show()
+plt.yticks(fontsize=20)
+plt.xticks(fontsize=18)
+plt.xlabel("Percentage of vacancies", fontsize=18)
+plt.ylabel("")
+plt.box(on=False)
+plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left", fontsize="16")
 
-# Save chart
-plt.savefig("top_occupations_sussex_uk.jpg", dpi=1200, bbox_inches="tight")
+
+plt.show()
+# plt.savefig("top_occupations_sussex_uk.jpg", dpi=1200, bbox_inches="tight")
 
 # %%

@@ -102,9 +102,6 @@ def skill_count(skills, label):
     for skill in skills:
         if skill is None:
             unique_counts = {}
-        # else:
-        # if s[label] is None:
-        #       unique_counts = {}
         else:
             unique_counts = Counter(s[label] for s in skill)
             unique_counts = {x: 1 for x in dict(unique_counts)}
@@ -812,13 +809,13 @@ base = (
 
 test = base.mark_point() + base.mark_text(dx=15, dy=2, align="left")
 
-test.save("uk_vs_sussex_skills_top.html", scale_factor=2.0)
+test  # .save("uk_vs_sussex_skills_top.html", scale_factor=2.0)
 
 # %% [markdown]
 # ### What salaries are associated with the largest (or fastest-growing) skill groups in Sussex?
 
 # %%
-list(df_sussex_10["Skill"].head(5))
+list(df_sussex_10["Skill"].head(8))
 
 
 # %%
@@ -833,12 +830,36 @@ def get_salary_fields(data, field):
 
 # %%
 salary = get_salary_fields(sussex, "max_annualised_salary")
+salary_min = get_salary_fields(sussex, "min_annualised_salary")
+
+# %%
+len(salary_min)
 
 # %%
 skills_sussex = pd.DataFrame(cluster_2)
-skills_sussex["salary"] = salary
-skills_sussex.dropna(subset=["salary"], inplace=True)
-skills_sussex.fillna(0, inplace=True)
+
+# %%
+skills_sussex.shape
+
+# %%
+skills_sussex_max = pd.DataFrame(cluster_2)
+skills_sussex_max["salary"] = salary
+skills_sussex_max.dropna(subset=["salary"], inplace=True)
+skills_sussex_max.fillna(0, inplace=True)
+skills_sussex_max["type"] = "max annualised salary"
+
+# %%
+skills_sussex_min = pd.DataFrame(cluster_2)
+skills_sussex_min["salary"] = salary_min
+skills_sussex_min.dropna(subset=["salary"], inplace=True)
+skills_sussex_min.fillna(0, inplace=True)
+skills_sussex_min["type"] = "min annualised salary"
+
+# %%
+skills_sussex = pd.concat([skills_sussex_max, skills_sussex_min], axis=0)
+
+# %%
+skills_sussex.shape
 
 # %%
 skills_sussex = skills_sussex[
@@ -848,7 +869,11 @@ skills_sussex = skills_sussex[
         "Financial Services",
         "Sales",
         "Data Analytics",
+        "Office Adminstration",
+        "Accounting",
+        "Workplace Safety Management",
         "salary",
+        "type",
     ]
 ]
 
@@ -856,11 +881,14 @@ skills_sussex = skills_sussex[
 skills_sussex.head(5)
 
 # %%
-cs = skills_sussex[["Customer Services", "salary"]]
-bp = skills_sussex[["Business & Project Management", "salary"]]
-fs = skills_sussex[["Financial Services", "salary"]]
-sl = skills_sussex[["Sales", "salary"]]
-da = skills_sussex[["Data Analytics", "salary"]]
+cs = skills_sussex[["Customer Services", "salary", "type"]]
+bp = skills_sussex[["Business & Project Management", "salary", "type"]]
+fs = skills_sussex[["Financial Services", "salary", "type"]]
+sl = skills_sussex[["Sales", "salary", "type"]]
+da = skills_sussex[["Data Analytics", "salary", "type"]]
+oa = skills_sussex[["Office Adminstration", "salary", "type"]]
+a = skills_sussex[["Accounting", "salary", "type"]]
+wp = skills_sussex[["Workplace Safety Management", "salary", "type"]]
 
 # %%
 cs = cs[cs["Customer Services"] != 0]
@@ -868,6 +896,9 @@ bp = bp[bp["Business & Project Management"] != 0]
 fs = fs[fs["Financial Services"] != 0]
 sl = sl[sl["Sales"] != 0]
 da = da[da["Data Analytics"] != 0]
+oa = oa[oa["Office Adminstration"] != 0]
+a = a[a["Accounting"] != 0]
+wp = wp[wp["Workplace Safety Management"] != 0]
 
 # %%
 cs.drop(["Customer Services"], axis=1, inplace=True)
@@ -875,6 +906,9 @@ bp.drop(["Business & Project Management"], axis=1, inplace=True)
 fs.drop(["Financial Services"], axis=1, inplace=True)
 sl.drop(["Sales"], axis=1, inplace=True)
 da.drop(["Data Analytics"], axis=1, inplace=True)
+oa.drop(["Office Adminstration"], axis=1, inplace=True)
+a.drop(["Accounting"], axis=1, inplace=True)
+wp.drop(["Workplace Safety Management"], axis=1, inplace=True)
 
 # %%
 cs.head(1)
@@ -885,9 +919,12 @@ bp["skill group"] = "Business & Project Management"
 fs["skill group"] = "Financial Services"
 sl["skill group"] = "Sales"
 da["skill group"] = "Data Analytics"
+oa["skill group"] = "Office Adminstration"
+a["skill group"] = "Accounting"
+wp["skill group"] = "Workplace Safety Management"
 
 # %%
-skill_salary = pd.concat([cs, bp, fs, sl, da], axis=0)
+skill_salary = pd.concat([cs, bp, fs, sl, da, oa, a, wp], axis=0)
 
 # %%
 skill_salary.reset_index(inplace=True)
@@ -899,78 +936,22 @@ import seaborn as sns
 sl["salary"].max()
 
 # %%
-fig = plt.figure(figsize=(15, 6))
-sns.displot(cs, x="salary", bins=50)
-cs["salary"].max()
-
-plt.title("Distribution of annual salary per skill group")
+df_sussex_10.head(1)
 
 # %%
 skill_salary.head(2)
 
 # %%
-df_sussex_10.head(5)
-
-# %%
-fig_dims = (10, 10)
-fig, ax = plt.subplots(figsize=fig_dims)
-
-my_pal = {
-    "Customer Services": "#9A1BBE",
-    "Business & Project Management": "#EB003B",
-    "Financial Services": "#EB003B",
-    "Sales": "#9A1BBE",
-    "Data Analytics": "#FF6E47",
-}
-
-
-# Turns off grid on the left Axis.
-ax.grid(False)
-
-
-ax = sns.boxplot(x="skill group", y="salary", data=skill_salary, palette=my_pal)
-
-from matplotlib.lines import Line2D
-
-legend_elements = [
-    Line2D([0], [0], color="#9A1BBE", lw=4, label="Sales & Communication"),
-    Line2D(
-        [0], [0], color="#EB003B", lw=4, label="Business Administration, Finance & Law"
-    ),
-    Line2D(
-        [0],
-        [0],
-        color="#FF6E47",
-        lw=4,
-        label="Information & Communication Technologies",
-    ),
-]
-ax.legend(handles=legend_elements, loc=2, bbox_to_anchor=(1, 1))
-
-ax.set_title("Salary distributions of top 5 skills - Sussex", fontsize=18)
-ax.tick_params(axis="x", rotation=90)
-
-# plt.tight_layout()
-
-# Do the plot code
-plt.savefig(
-    "salary_distributions_top_5_skills_sussex.jpg",
-    format="jpg",
-    dpi=1200,
-    bbox_inches="tight",
+rank = (
+    skill_salary.groupby("skill group")["salary"].mean().fillna(0).sort_values().index
 )
 
 # %%
-fig_dims = (10, 10)
+fig_dims = (18, 10)
 fig, ax = plt.subplots(figsize=fig_dims)
 
-my_pal = {
-    "Customer Services": "#9A1BBE",
-    "Business & Project Management": "#EB003B",
-    "Financial Services": "#EB003B",
-    "Sales": "#9A1BBE",
-    "Data Analytics": "#FF6E47",
-}
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
 
 
 # Turns off grid on the left Axis.
@@ -978,28 +959,30 @@ ax.grid(False)
 
 
 ax = sns.boxplot(
-    x="skill group", y="salary", data=skill_salary, palette=my_pal, showfliers=False
+    x="skill group",
+    y="salary",
+    data=skill_salary,
+    hue="type",
+    palette=["#F6A4B7", "#EB003B"],
+    showfliers=False,
+    order=rank,
+    hue_order=["min annualised salary", "max annualised salary"],
 )
 
 from matplotlib.lines import Line2D
 
-legend_elements = [
-    Line2D([0], [0], color="#9A1BBE", lw=4, label="Sales & Communication"),
-    Line2D(
-        [0], [0], color="#EB003B", lw=4, label="Business Administration, Finance & Law"
-    ),
-    Line2D(
-        [0],
-        [0],
-        color="#FF6E47",
-        lw=4,
-        label="Information & Communication Technologies",
-    ),
-]
-ax.legend(handles=legend_elements, loc=2, bbox_to_anchor=(1, 1))
+ax.legend(fontsize="18")
 
-ax.set_title("Salary distributions of top 5 skills - Sussex", fontsize=18)
+ax.set_title(
+    "Salary distributions of the most common Sussex skills", fontsize=25, pad=25
+)
 ax.tick_params(axis="x", rotation=90)
+
+plt.xticks(rotation=45, ha="right", fontsize=18)
+plt.yticks(fontsize=18)
+plt.xlabel("")
+plt.ylabel("")
+
 
 # plt.tight_layout()
 

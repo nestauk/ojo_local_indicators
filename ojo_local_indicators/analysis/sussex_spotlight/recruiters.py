@@ -48,6 +48,9 @@ created = [d["created"] for d in sussex if "created" in d]
 company = [d["company_raw"] for d in sussex if "company_raw" in d]
 
 # %%
+len(created)
+
+# %%
 rec = pd.DataFrame(list(zip(company, created)), columns=["recruiter", "created"])
 
 # %%
@@ -55,12 +58,12 @@ rec.head(5)
 
 # %%
 type_rec = [
-    "r",
-    "r",
+    "recruiter",
+    "recruiter",
     "organisation",
-    "r",
+    "recruiter",
     "organisation",
-    "r",
+    "recruiter",
     "organisation",
     "recruiter",
     "recruiter",
@@ -83,8 +86,22 @@ test["type"] = type_rec
 test.set_index("index", inplace=True)
 
 # %%
-test["recruiter"].plot(kind="bar", figsize=(15, 7), color=["#18A48C"], alpha=0.7)
-plt.title("Top 30 companies posting vacancies - Sussex Nuts 2 region", fontsize=14)
+test.head(6)
+
+# %%
+fig, ax = plt.subplots(figsize=(15, 7))
+
+
+test["recruiter"].plot(kind="bar", color=["#18A48C"], alpha=0.7)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_visible(False)
+
+plt.title("Top 30 companies posting vacancies - Sussex Nuts 2 region", fontsize=20)
+plt.xticks(rotation=45, ha="right", fontsize=15)
+plt.xlabel("")
+plt.yticks(fontsize=15)
 
 # %% [markdown]
 # UK
@@ -102,34 +119,13 @@ created = [d["created"] for d in uk_sample if "created" in d]
 company = [d["company_raw"] for d in uk_sample if "company_raw" in d]
 
 # %%
+len(company)
+
+# %%
 rec = pd.DataFrame(list(zip(company, created)), columns=["recruiter", "created"])
 
 # %%
 rec.head(10)
-
-# %%
-type_rec = [
-    "r",
-    "r",
-    "organisation",
-    "r",
-    "organisation",
-    "r",
-    "organisation",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-    "recruiter",
-]
 
 # %%
 test = rec["recruiter"].value_counts(normalize=True).mul(100).head(20).reset_index()
@@ -137,7 +133,22 @@ test = rec["recruiter"].value_counts(normalize=True).mul(100).head(20).reset_ind
 test.set_index("index", inplace=True)
 
 # %%
-test["recruiter"].plot(kind="bar", figsize=(15, 7), color=["#0000FF"], alpha=0.7)
-plt.title("Top 30 companies posting vacancies - UK", fontsize=14)
+test
+
+# %%
+fig, ax = plt.subplots(figsize=(15, 7))
+
+
+test["recruiter"].plot(kind="bar", color=["#0000FF"], alpha=0.7)
+
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.spines["left"].set_visible(False)
+
+
+plt.title("Top 30 companies posting vacancies - UK", fontsize=20)
+plt.xticks(rotation=45, ha="right", fontsize=15)
+plt.xlabel("")
+plt.yticks(fontsize=15)
 
 # %%

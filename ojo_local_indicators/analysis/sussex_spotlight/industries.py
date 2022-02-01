@@ -57,6 +57,9 @@ uk_sample = uk
 print(len(sussex))
 print(len(uk_sample))
 
+# %%
+uk_sample[0]
+
 # %% [markdown]
 # ### Which industries have advertised the most vacancies in Sussex, and how does this compare to the rest of the UK?
 
@@ -66,6 +69,9 @@ created = [d["created"] for d in sussex if "created" in d]
 
 industry_uk = [d["parent_sector"] for d in uk_sample if "parent_sector" in d]
 created_uk = [d["created"] for d in uk_sample if "created" in d]
+
+# %%
+len(industry_uk)
 
 # %%
 ind = pd.DataFrame(list(zip(industry, created)), columns=["industry", "created"])
@@ -120,6 +126,80 @@ import numpy as np
 from altair_saver import save
 
 # %%
+indust_comb[indust_comb["location"] == "Sussex"].sort_values(
+    by="percentage share", ascending=False
+).head(5)
+
+# %%
+indust_comb[indust_comb["industry"] == "Hospitality Catering"]
+
+# %%
+import plotly.express as px
+
+df = px.data.medals_long()
+
+fig = px.scatter(
+    indust_comb,
+    y="industry",
+    x="percentage share",
+    color="location",
+    symbol="location",
+    width=950,
+    height=1100,
+    color_discrete_sequence=["#18A48C", "#0000FF"],
+)
+fig.update_traces(marker_size=10)
+
+# fig.update_layout(
+#   paper_bgcolor='rgba(255,255,255,1)',
+#  plot_bgcolor='rgba(255,255,255,1)',
+# showlegend=True,
+# title_text='<b>Percentage of vacancies by industry - Sussex compared to the rest of the UK</b>', title_x=0.5
+# )
+
+
+fig.update_layout(
+    paper_bgcolor="rgba(255,255,255,1)",
+    plot_bgcolor="rgba(255,255,255,1)",
+    showlegend=True,
+    title=dict(
+        text="",
+        # x=0.5,
+        font=dict(family="Arial", size=15, color="#000000"),
+    ),
+    xaxis_title="<b>Percentage share of vacancies</b>",
+    font=dict(family="Arial", size=19, color="#000000"),
+)
+
+fig.update_layout(
+    legend=dict(font=dict(family="Arial", size=19, color="black")),
+    legend_title=dict(text="<b>Location</b>", font=dict(family="Arial", size=20)),
+)
+
+fig.update_yaxes(categoryorder="sum ascending")
+
+fig.update_xaxes(tickfont_family="Arial", showline=True, linewidth=1, linecolor="black")
+fig.update_yaxes(
+    tickfont_family="Arial",
+    title="",
+    showline=True,
+    linewidth=1,
+    linecolor="black",
+    showgrid=True,
+    gridwidth=1,
+    gridcolor="LightGrey",
+)
+
+
+import plotly.io as pio
+
+pio.write_image(fig, "industries_sussex2.svg", width=900, height=1100, scale=2)
+fig.show()
+
+# %%
+import seaborn as sns
+
+# %%
 domain = ["Sussex", "UK"]
 range_ = ["#18A48C", "#0000FF"]
 
@@ -129,7 +209,7 @@ chart = (
         indust_comb,
         title="Percentage of vacancies by industry - Sussex compared to the rest of the UK",
     )
-    .mark_tick(filled=True, thickness=3, opacity=0.7)
+    .mark_tick(filled=True, thickness=5, opacity=0.7)
     .encode(
         # x='percentage share:Q',
         x=alt.X(
@@ -144,15 +224,15 @@ chart = (
             scale=alt.Scale(domain=domain, range=range_),
         ),
     )
-    .properties(width=650, height=1000)
+    .properties(width=850, height=1000)
     .configure_axis(labelFontSize=12, titleFontSize=14)
-    .configure_title(fontSize=16)
+    .configure_title(fontSize=18)
     .configure_legend(titleFontSize=14, labelFontSize=12)
 )
 
-chart  # .resolve_scale(y='independent')
+chart.resolve_scale(y="independent")
 
-save(chart, "vacancies_industry_sussex_uk.html")
+# save(chart, "vacancies_industry_sussex_uk.html")
 
 # %% [markdown]
 # ### Time
