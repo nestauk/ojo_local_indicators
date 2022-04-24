@@ -16,11 +16,6 @@
 # ---
 
 # %% [markdown]
-# *To note / highlight to Cath: Charts that look at Occupations will need to be in the UK jobs sample (as occupation not in all ads)
-#
-# *Check with Jack on annualised salary question
-
-# %% [markdown]
 # # Analyses digital skills by occupations (for the UK and Sussex) and produces three charts
 
 # %% [markdown]
