@@ -19,7 +19,7 @@ The code to produce the figures within the slide deck can be found within the [a
 - [**Green jobs**](https://github.com/nestauk/ojo_local_indicators/tree/dev/ojo_local_indicators/analysis): Examines the mix of job adverts for positions in green industries. The methodology for identifying ‘green jobs’ is [available here](https://www.nesta.org.uk/project-updates/finding-jobs-green-industries-methodology/).
 - [**Transversal skills**](https://github.com/nestauk/ojo_local_indicators/tree/dev/ojo_local_indicators/analysis): Visuals for the deep-dive into transversal skills.
 - [**Digital skills**](https://github.com/nestauk/ojo_local_indicators/tree/dev/ojo_local_indicators/analysis/digital_skills): Visuals for the deep-dive into digital skills.
-- [**Occupations**](): Creates the dataset that drives the [interactive visualisation](https://observablehq.com/@cath/2202_sussex_jobs_skills).
+- [**Visualisation**](): Creates the dataset that drives the [interactive visualisation](https://github.com/nestauk/ojo_local_indicators/tree/dev/ojo_local_indicators/analysis/visualisation).
 
 ## Installation (internal)
 
